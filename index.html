@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gazpacho Moderno — Урок испанского</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #fdf6f0;
+            color: #2d1f1f;
+            line-height: 1.7;
+        }
+
+        /* HERO */
+        .hero {
+            position: relative;
+            background: #1a0a0a;
+            min-height: 520px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('food-pattern.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.35;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 48px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+        .hero-img {
+            flex-shrink: 0;
+            width: 320px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .hero-text h1 {
+            font-size: 2.6rem;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+        .hero-text h1 span {
+            color: #e8614a;
+        }
+        .hero-text p {
+            color: #f0d9cc;
+            font-size: 1.1rem;
+            max-width: 520px;
+        }
+        .level-badge {
+            display: inline-block;
+            background: #e8614a;
+            color: #fff;
+            font-size: 0.8rem;
+            font-family: sans-serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        section {
+            padding: 60px 0;
+        }
+        section:nth-child(even) {
+            background: #fff8f4;
+        }
+
+        .section-label {
+            font-family: sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #e8614a;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: 1.9rem;
+            color: #1a0a0a;
+            margin-bottom: 28px;
+            font-style: italic;
+        }
+
+        .text-block p {
+            font-size: 1.05rem;
+            margin-bottom: 18px;
+            color: #3a2a2a;
+        }
+
+        .full-img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            display: block;
+            margin: 32px 0;
+        }
+
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 8px;
+        }
+        .glossary-item {
+            background: #fff;
+            border-left: 4px solid #e8614a;
+            border-radius: 8px;
+            padding: 14px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .glossary-item .es {
+            font-weight: 700;
+            color: #c0392b;
+            font-size: 1rem;
+        }
+        .glossary-item .ru {
+            color: #666;
+            font-size: 0.9rem;
+            font-family: sans-serif;
+            margin-top: 2px;
+        }
+
+        .question-block {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        }
+        .question-block .q-text {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a0a0a;
+        }
+        .options label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-size: 0.95rem;
+            color: #3a2a2a;
+            transition: background 0.2s;
+            margin-bottom: 6px;
+            border: 2px solid transparent;
+        }
+        .options label:hover { background: #fdf0eb; }
+        .options input[type="radio"] {
+            margin-top: 2px;
+            accent-color: #e8614a;
+            flex-shrink: 0;
+        }
+        .options label.correct {
+            background: #eafaf1;
+            border-color: #27ae60;
+            color: #1e8449;
+        }
+        .options label.wrong {
+            background: #fdf0eb;
+            border-color: #e8614a;
+            color: #c0392b;
+        }
+        .check-btn {
+            margin-top: 14px;
+            background: #e8614a;
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 24px;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .check-btn:hover { background: #c0392b; transform: translateY(-1px); }
+        .feedback {
+            margin-top: 12px;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-height: 20px;
+        }
+        .feedback.ok { color: #27ae60; }
+        .feedback.err { color: #c0392b; }
+
+        .open-question textarea {
+            width: 100%;
+            min-height: 100px;
+            border: 2px solid #e0cfc8;
+            border-radius: 10px;
+            padding: 14px;
+            font-family: sans-serif;
+            font-size: 0.95rem;
+            color: #2d1f1f;
+            background: #fffaf8;
+            resize: vertical;
+            transition: border-color 0.2s;
+            margin-top: 12px;
+        }
+        .open-question textarea:focus {
+            outline: none;
+            border-color: #e8614a;
+        }
+        .open-question .hint {
+            font-family: sans-serif;
+            font-size: 0.82rem;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .ingredients-img-wrap {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            margin: 32px 0;
+        }
+        .ingredients-img-wrap img {
+            width: 100%;
+            display: block;
+        }
+
+        .vocab-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: sans-serif;
+            font-size: 0.92rem;
+            margin-top: 16px;
+        }
+        .vocab-table thead tr {
+            background: #e8614a;
+            color: #fff;
+        }
+        .vocab-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .vocab-table tbody tr:nth-child(even) { background: #fff8f4; }
+        .vocab-table tbody tr:nth-child(odd) { background: #fff; }
+        .vocab-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #f0e0d8;
+            color: #3a2a2a;
+        }
+        .vocab-table td:first-child { font-weight: 700; color: #c0392b; }
+        .tag {
+            display: inline-block;
+            background: #fdf0eb;
+            color: #e8614a;
+            border-radius: 10px;
+            padding: 2px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .recipe-steps {
+            counter-reset: step;
+            list-style: none;
+            margin-top: 16px;
+        }
+        .recipe-steps li {
+            counter-increment: step;
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        .recipe-steps li::before {
+            content: counter(step);
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            background: #e8614a;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .recipe-steps li p {
+            font-size: 1rem;
+            color: #3a2a2a;
+            padding-top: 6px;
+        }
+        .recipe-steps li p strong { color: #c0392b; }
+
+        .example-box {
+            background: linear-gradient(135deg, #fff0eb, #fdf6f0);
+            border-left: 5px solid #e8614a;
+            border-radius: 10px;
+            padding: 18px 24px;
+            margin: 24px 0;
+            font-style: italic;
+            font-size: 1rem;
+            color: #3a2a2a;
+        }
+        .example-box span {
+            font-family: sans-serif;
+            font-style: normal;
+            font-size: 0.8rem;
+            color: #999;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .odd-group {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px 28px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .odd-group .q-num {
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #e8614a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .odd-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .odd-options button {
+            background: #fdf6f0;
+            border: 2px solid #e0cfc8;
+            border-radius: 24px;
+            padding: 8px 20px;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+            color: #3a2a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .odd-options button:hover { border-color: #e8614a; background: #fdf0eb; }
+        .odd-options button.selected-correct {
+            background: #eafaf1;
+            border-color: #27ae60;
+            color: #1e8449;
+            font-weight: 700;
+        }
+        .odd-options button.selected-wrong {
+            background: #fdf0eb;
+            border-color: #e8614a;
+            color: #c0392b;
+        }
+
+        .dialogue-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .dialogue-lines {
+            background: #fdf6f0;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            font-style: italic;
+            font-size: 0.97rem;
+            color: #3a2a2a;
+            line-height: 2;
+        }
+        .dialogue-lines .dash { color: #e8614a; font-weight: 700; }
+
+        .score-banner {
+            background: linear-gradient(135deg, #e8614a, #c0392b);
+            color: #fff;
+            border-radius: 14px;
+            padding: 24px 32px;
+            text-align: center;
+            margin-top: 32px;
+            font-family: sans-serif;
+        }
+        .score-banner .score-num {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .score-banner p { font-size: 1rem; opacity: 0.9; margin-top: 6px; }
+        .score-btn {
+            background: #fff;
+            color: #e8614a;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 24px;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: transform 0.1s;
+        }
+        .score-btn:hover { transform: scale(1.04); }
+
+        footer {
+            background: #1a0a0a;
+            color: #f0d9cc;
+            text-align: center;
+            padding: 40px 24px;
+            font-family: sans-serif;
+            font-size: 0.88rem;
+        }
+        footer strong { color: #e8614a; }
+
+        .divider {
+            width: 60px;
+            height: 4px;
+            background: #e8614a;
+            border-radius: 2px;
+            margin: 0 0 28px 0;
+        }
+
+        @media (max-width: 700px) {
+            .hero-content { flex-direction: column; padding: 40px 20px; }
+            .hero-img { width: 100%; max-width: 320px; }
+            .hero-text h1 { font-size: 1.8rem; }
+            .section-title { font-size: 1.4rem; }
+            .glossary-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+        <div class="hero-text">
+            <div class="level-badge">Español · Nivel B1</div>
+            <h1>Gazpacho moderno:<br><span>aprender español</span><br>entre cuchillos y sabores</h1>
+            <p>Un viaje por la cocina vanguardista de España para descubrir nuevas palabras, practicar el imperativo y hablar de sabores, texturas y emociones en la mesa.</p>
+        </div>
+    </div>
+</header>
+
+<section id="texto">
+    <div class="container">
+        <div class="section-label">Lectura</div>
+        <h2 class="section-title">El restaurante que deforma la tradición</h2>
+        <div class="divider"></div>
+        <div class="text-block">
+            <p>En Madrid hay un restaurante muy especial llamado <strong>DiverXO</strong>, creado por el chef Dabiz Muñoz, famoso por su cocina hedonista y creativa. En este lugar no solo se come, se vive una experiencia vanguardista que sorprende en cada plato. La cocina de DiverXO mezcla tradición española con técnicas modernas y toques de otras culturas, como si cada bocado fuera un viaje por el mundo.</p>
+            <p>Un ejemplo perfecto es su idea de "deformar" platos clásicos como el <strong>gazpacho andaluz</strong>, una sopa fría tradicional de tomate y verduras que normalmente se sirve de forma muy sencilla. En versión moderna, el gazpacho cambia de textura y presentación: puede aparecer como una espuma ligera, como pequeñas esferas que explotan en la boca o como una crema muy fina con contrastes crujientes. Lo importante es mantener el sabor fresco del gazpacho, pero jugar con la sorpresa, la intensidad y la combinación de ingredientes.</p>
+            <p>En este curso vamos a usar este tipo de platos para aprender español: vamos a leer recetas, descubrir nuevas palabras y hablar de sabores, sensaciones y emociones en la mesa. Así, tú también podrás describir tu propio gazpacho mutante y contar una historia en cada cucharada.</p>
+        </div>
+    </div>
+</section>
+
+<section id="glosario">
+    <div class="container">
+        <div class="section-label">Vocabulario</div>
+        <h2 class="section-title">Glosario</h2>
+        <div class="divider"></div>
+        <div class="glossary-grid">
+            <div class="glossary-item"><div class="es">vanguardia</div><div class="ru">авангард, передовой стиль</div></div>
+            <div class="glossary-item"><div class="es">cocina hedonista</div><div class="ru">гедонистская кухня</div></div>
+            <div class="glossary-item"><div class="es">fusión</div><div class="ru">фьюжн, смешение традиций</div></div>
+            <div class="glossary-item"><div class="es">textura</div><div class="ru">текстура, ощущение во рту</div></div>
+            <div class="glossary-item"><div class="es">explosión de sabor</div><div class="ru">взрыв вкуса</div></div>
+            <div class="glossary-item"><div class="es">sopa fría</div><div class="ru">холодный суп</div></div>
+            <div class="glossary-item"><div class="es">plato clásico</div><div class="ru">классическое блюдо</div></div>
+            <div class="glossary-item"><div class="es">presentación</div><div class="ru">подача блюда</div></div>
+            <div class="glossary-item"><div class="es">sorpresa</div><div class="ru">сюрприз, неожиданность</div></div>
+            <div class="glossary-item"><div class="es">viaje sensorial</div><div class="ru">сенсорное путешествие</div></div>
+        </div>
+    </div>
+</section>
+
+<section id="comprension">
+    <div class="container">
+        <div class="section-label">Comprensión lectora</div>
+        <h2 class="section-title">Preguntas de comprensión</h2>
+        <div class="divider"></div>
+
+        <div class="question-block">
+            <div class="q-text">1. ¿Qué tipo de experiencia ofrece el restaurante DiverXO?</div>
+            <div class="options">
+                <label><input type="radio" name="q1" value="a"> a) Una experiencia muy tradicional y simple</label>
+                <label><input type="radio" name="q1" value="b"> b) Una experiencia vanguardista y sorprendente</label>
+                <label><input type="radio" name="q1" value="c"> c) Una experiencia rápida y barata</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('q1','b',this)">Comprobar</button>
+            <div class="feedback" id="q1-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">2. ¿Qué ocurre con el gazpacho en la versión moderna?</div>
+            <div class="options">
+                <label><input type="radio" name="q2" value="a"> a) Pierde completamente su sabor clásico</label>
+                <label><input type="radio" name="q2" value="b"> b) Mantiene el sabor fresco, pero cambia la textura y la presentación</label>
+                <label><input type="radio" name="q2" value="c"> c) Se sirve caliente y sin verduras</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('q2','b',this)">Comprobar</button>
+            <div class="feedback" id="q2-fb"></div>
+        </div>
+
+        <div class="question-block open-question">
+            <div class="q-text">3. ¿Por qué es interesante aprender español a través de platos como el gazpacho mutante?</div>
+            <textarea placeholder="Escribe tu respuesta aquí..."></textarea>
+            <div class="hint">Respuesta libre — no hay una única respuesta correcta.</div>
+        </div>
+    </div>
+</section>
+
+<section id="ingredientes">
+    <div class="container">
+        <div class="section-label">Vocabulario culinario</div>
+        <h2 class="section-title">Ingredientes para el Gazpacho 2.0</h2>
+        <div class="divider"></div>
+
+        <table class="vocab-table">
+            <thead><tr><th>Español</th><th>Русский</th><th>Categoría</th></tr></thead>
+            <tbody>
+                <tr><td>tomate maduro</td><td>спелый помидор</td><td><span class="tag">овощ</span></td></tr>
+                <tr><td>pepino</td><td>огурец</td><td><span class="tag">овощ</span></td></tr>
+                <tr><td>pimiento verde</td><td>зелёный перец</td><td><span class="tag">овощ</span></td></tr>
+                <tr><td>ajo</td><td>чеснок</td><td><span class="tag">специя</span></td></tr>
+                <tr><td>aceite de oliva virgen extra</td><td>оливковое масло extra virgin</td><td><span class="tag">масло</span></td></tr>
+                <tr><td>vinagre de vino</td><td>винный уксус</td><td><span class="tag">приправа</span></td></tr>
+                <tr><td>sal</td><td>соль</td><td><span class="tag">специя</span></td></tr>
+                <tr><td>remolacha licuada</td><td>пюрированная свёкла</td><td><span class="tag">модерн</span></td></tr>
+                <tr><td>esferificaciones de aceite</td><td>сферификации масла</td><td><span class="tag">декор</span></td></tr>
+                <tr><td>espuma de tomate</td><td>томатная пена</td><td><span class="tag">текстура</span></td></tr>
+                <tr><td>crujiente de pan de ajo</td><td>хрустящий чесночный тост</td><td><span class="tag">гарнир</span></td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top:40px; margin-bottom:16px; font-size:1.2rem;">Verbos de cocina</h3>
+        <table class="vocab-table">
+            <thead><tr><th>Verbo</th><th>Русский</th></tr></thead>
+            <tbody>
+                <tr><td>triturar</td><td>измельчать</td></tr>
+                <tr><td>licuar</td><td>сбивать, делать жидким</td></tr>
+                <tr><td>colar</td><td>процеживать</td></tr>
+                <tr><td>emulsionar</td><td>эмульгировать</td></tr>
+                <tr><td>enfriar</td><td>охлаждать</td></tr>
+                <tr><td>decorar</td><td>украшать</td></tr>
+            </tbody>
+        </table>
+
+        <div class="example-box">
+            <span>Ejemplo</span>
+            Tritura los tomates y cuela la mezcla para conseguir una textura muy fina.
+        </div>
+    </div>
+</section>
+
+<section id="receta">
+    <div class="container">
+        <div class="section-label">Receta</div>
+        <h2 class="section-title">Gazpacho 2.0 — Preparación</h2>
+        <div class="divider"></div>
+        <ol class="recipe-steps">
+            <li><p><strong>Primero,</strong> lava bien los tomates, el pepino y el pimiento verde, y corta todas las verduras en trozos grandes.</p></li>
+            <li><p>Pon los trozos en el vaso de la batidora, añade la sal y <strong>tritura</strong> hasta obtener una crema muy fina.</p></li>
+            <li><p><strong>Luego,</strong> añade el aceite de oliva y el vinagre y vuelve a triturar para <strong>emulsionar</strong>.</p></li>
+            <li><p>Incorpora la remolacha licuada y tritura de nuevo hasta que el color sea homogéneo.</p></li>
+            <li><p><strong>Después,</strong> pasa la mezcla por un <strong>colador fino</strong> y enfría en la nevera al menos una hora.</p></li>
+            <li><p>Prepara la espuma de tomate en el sifón y agita bien.</p></li>
+            <li><p><strong>Al final,</strong> sirve en cuencos, coloca la espuma encima y decora con esferificaciones y crujiente de pan.</p></li>
+            <li><p>Prueba y ajusta la sal o el vinagre para <strong>equilibrar el sabor</strong>.</p></li>
+        </ol>
+    </div>
+</section>
+
+<section id="ejercicios">
+    <div class="container">
+        <div class="section-label">Práctica</div>
+        <h2 class="section-title">Ejercicio 1 — La palabra extraña</h2>
+        <div class="divider"></div>
+
+        <div class="odd-group">
+            <div class="q-num">Grupo 1</div>
+            <div class="odd-options">
+                <button onclick="checkOdd(this,false)">a) tomate maduro</button>
+                <button onclick="checkOdd(this,false)">b) pepino</button>
+                <button onclick="checkOdd(this,false)">c) pimiento verde</button>
+                <button onclick="checkOdd(this,true)">d) queso azul</button>
+            </div>
+        </div>
+
+        <div class="odd-group">
+            <div class="q-num">Grupo 2</div>
+            <div class="odd-options">
+                <button onclick="checkOdd(this,false)">a) aceite de oliva</button>
+                <button onclick="checkOdd(this,false)">b) vinagre de vino</button>
+                <button onclick="checkOdd(this,false)">c) sal</button>
+                <button onclick="checkOdd(this,true)">d) cerezas</button>
+            </div>
+        </div>
+
+        <div class="odd-group">
+            <div class="q-num">Grupo 3</div>
+            <div class="odd-options">
+                <button onclick="checkOdd(this,false)">a) remolacha licuada</button>
+                <button onclick="checkOdd(this,false)">b) ají amarillo</button>
+                <button onclick="checkOdd(this,false)">c) esferificaciones de aceite</button>
+                <button onclick="checkOdd(this,true)">d) yogur natural</button>
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top:48px;">Ejercicio 2 — Significado de palabras</h2>
+        <div class="divider"></div>
+
+        <div class="question-block">
+            <div class="q-text">1) sopa fría</div>
+            <div class="options">
+                <label><input type="radio" name="e2q1" value="a"> a) горячий суп</label>
+                <label><input type="radio" name="e2q1" value="b"> b) холодный суп</label>
+                <label><input type="radio" name="e2q1" value="c"> c) сладкий суп</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('e2q1','b',this)">Comprobar</button>
+            <div class="feedback" id="e2q1-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">2) textura muy fina</div>
+            <div class="options">
+                <label><input type="radio" name="e2q2" value="a"> a) очень грубая текстура</label>
+                <label><input type="radio" name="e2q2" value="b"> b) очень гладкая текстура</label>
+                <label><input type="radio" name="e2q2" value="c"> c) очень сухая текстура</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('e2q2','b',this)">Comprobar</button>
+            <div class="feedback" id="e2q2-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">3) sabor ligeramente picante</div>
+            <div class="options">
+                <label><input type="radio" name="e2q3" value="a"> a) очень сладкий вкус</label>
+                <label><input type="radio" name="e2q3" value="b"> b) сильно острый вкус</label>
+                <label><input type="radio" name="e2q3" value="c"> c) слегка пикантный вкус</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('e2q3','c',this)">Comprobar</button>
+            <div class="feedback" id="e2q3-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">4) crujiente de pan</div>
+            <div class="options">
+                <label><input type="radio" name="e2q4" value="a"> a) хрустящая крошка из хлеба</label>
+                <label><input type="radio" name="e2q4" value="b"> b) мягкий хлеб</label>
+                <label><input type="radio" name="e2q4" value="c"> c) тост без корочки</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('e2q4','a',this)">Comprobar</button>
+            <div class="feedback" id="e2q4-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">5) toque ácido</div>
+            <div class="options">
+                <label><input type="radio" name="e2q5" value="a"> a) молочный оттенок</label>
+                <label><input type="radio" name="e2q5" value="b"> b) кислотный акцент</label>
+                <label><input type="radio" name="e2q5" value="c"> c) горькое послевкусие</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('e2q5','b',this)">Comprobar</button>
+            <div class="feedback" id="e2q5-fb"></div>
+        </div>
+
+        <h2 class="section-title" style="margin-top:48px;">Ejercicio 3 — Imperativo (tú → usted)</h2>
+        <div class="divider"></div>
+
+        <div class="question-block">
+            <div class="q-text">1) Lava los tomates. →</div>
+            <div class="options">
+                <label><input type="radio" name="im1" value="a"> a) Lave los tomates.</label>
+                <label><input type="radio" name="im1" value="b"> b) Lavas los tomates.</label>
+                <label><input type="radio" name="im1" value="c"> c) Laváis los tomates.</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('im1','a',this)">Comprobar</button>
+            <div class="feedback" id="im1-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">2) Tritura las verduras. →</div>
+            <div class="options">
+                <label><input type="radio" name="im2" value="a"> a) Triture las verduras.</label>
+                <label><input type="radio" name="im2" value="b"> b) Trituras las verduras.</label>
+                <label><input type="radio" name="im2" value="c"> c) Trituren las verduras.</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('im2','a',this)">Comprobar</button>
+            <div class="feedback" id="im2-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">3) Añade el aceite. →</div>
+            <div class="options">
+                <label><input type="radio" name="im3" value="a"> a) Añada el aceite.</label>
+                <label><input type="radio" name="im3" value="b"> b) Añades el aceite.</label>
+                <label><input type="radio" name="im3" value="c"> c) Añadid el aceite.</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('im3','a',this)">Comprobar</button>
+            <div class="feedback" id="im3-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">4) Pasa la mezcla por un colador. →</div>
+            <div class="options">
+                <label><input type="radio" name="im4" value="a"> a) Pase la mezcla por un colador.</label>
+                <label><input type="radio" name="im4" value="b"> b) Pasas la mezcla por un colador.</label>
+                <label><input type="radio" name="im4" value="c"> c) Pasad la mezcla por un colador.</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('im4','a',this)">Comprobar</button>
+            <div class="feedback" id="im4-fb"></div>
+        </div>
+
+        <div class="question-block">
+            <div class="q-text">5) Prueba el gazpacho. →</div>
+            <div class="options">
+                <label><input type="radio" name="im5" value="a"> a) Pruebe el gazpacho.</label>
+                <label><input type="radio" name="im5" value="b"> b) Pruebas el gazpacho.</label>
+                <label><input type="radio" name="im5" value="c"> c) Probad el gazpacho.</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('im5','a',this)">Comprobar</button>
+            <div class="feedback" id="im5-fb"></div>
+        </div>
+
+        <h2 class="section-title" style="margin-top:48px;">Ejercicio 4 — Diálogo</h2>
+        <div class="divider"></div>
+
+        <div class="dialogue-box">
+            <div class="dialogue-lines">
+                <div><span class="dash">—</span> Me gusta el gazpacho más frío y menos ácido, por favor.</div>
+                <div><span class="dash">—</span> Perfecto, lo servimos muy frío y con menos vinagre.</div>
+            </div>
+            <div class="q-text">¿Qué prefiere el cliente?</div>
+            <div class="options">
+                <label><input type="radio" name="d1" value="a"> a) Un gazpacho más caliente y más ácido.</label>
+                <label><input type="radio" name="d1" value="b"> b) Un gazpacho más frío y menos ácido.</label>
+                <label><input type="radio" name="d1" value="c"> c) Un gazpacho sin sal y sin vinagre.</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('d1','b',this)">Comprobar</button>
+            <div class="feedback" id="d1-fb"></div>
+        </div>
+
+        <div class="dialogue-box">
+            <div class="dialogue-lines">
+                <div><span class="dash">—</span> Prefiero el gazpacho sin ajo y con más textura crujiente.</div>
+                <div><span class="dash">—</span> De acuerdo, lo preparamos sin ajo y con crujiente de pan por encima.</div>
+            </div>
+            <div class="q-text">¿Qué pide el cliente?</div>
+            <div class="options">
+                <label><input type="radio" name="d2" value="a"> a) Más ajo y menos textura crujiente.</label>
+                <label><input type="radio" name="d2" value="b"> b) Sin ajo y con más textura crujiente.</label>
+                <label><input type="radio" name="d2" value="c"> c) Sin pan y con más ajo.</label>
+            </div>
+            <button class="check-btn" onclick="checkRadio('d2','b',this)">Comprobar</button>
+            <div class="feedback" id="d2-fb"></div>
+        </div>
+
+        <div class="score-banner" id="score-banner" style="display:none;">
+            <div class="score-num" id="score-num">0</div>
+            <p>respuestas correctas de <span id="score-total">0</span></p>
+            <button class="score-btn" onclick="resetAll()">Intentar de nuevo</button>
+        </div>
+        <div style="text-align:center; margin-top:32px;">
+            <button class="check-btn" style="font-size:1rem; padding:14px 40px;" onclick="showScore()">Ver mi puntuación total</button>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p><strong>Gazpacho Moderno</strong> · Curso de español a través de la cocina</p>
+    <p style="margin-top:8px; opacity:0.6;">© 2025 · Todos los derechos reservados</p>
+</footer>
+
+<script>
+    const answered = {};
+    const correctMap = {
+        q1:'b', q2:'b',
+        e2q1:'b', e2q2:'b', e2q3:'c', e2q4:'a', e2q5:'b',
+        im1:'a', im2:'a', im3:'a', im4:'a', im5:'a',
+        d1:'b', d2:'b'
+    };
+
+    function checkRadio(name, correct, btn) {
+        if (answered[name]) return;
+        const selected = document.querySelector(`input[name="${name}"]:checked`);
+        const fb = document.getElementById(name + '-fb');
+        if (!selected) {
+            fb.textContent = '⚠ Elige una opción primero.';
+            fb.className = 'feedback err';
+            return;
+        }
+        answered[name] = true;
+        btn.disabled = true;
+        document.querySelectorAll(`input[name="${name}"]`).forEach(inp => {
+            const lbl = inp.parentElement;
+            if (inp.value === correct) lbl.classList.add('correct');
+            else if (inp.checked) lbl.classList.add('wrong');
+            inp.disabled = true;
+        });
+        if (selected.value === correct) {
+            fb.textContent = '✓ ¡Correcto!';
+            fb.className = 'feedback ok';
+        } else {
+            fb.textContent = '✗ No es correcto. La respuesta correcta está en verde.';
+            fb.className = 'feedback err';
+        }
+    }
+
+    function checkOdd(btn, isCorrect) {
+        const group = btn.closest('.odd-group');
+        if (group.dataset.answered) return;
+        group.dataset.answered = 'true';
+        group.querySelectorAll('button').forEach(b => {
+            b.disabled = true;
+            if (b.onclick.toString().includes(',true)')) b.classList.add('selected-correct');
+        });
+        if (!isCorrect) btn.classList.add('selected-wrong');
+    }
+
+    function showScore() {
+        let correct = 0;
+        let total = Object.keys(correctMap).length;
+        for (let name in correctMap) {
+            const sel = document.querySelector(`input[name="${name}"]:checked`);
+            if (sel && sel.value === correctMap[name]) correct++;
+        }
+        document.getElementById('score-num').textContent = correct;
+        document.getElementById('score-total').textContent = total;
+        document.getElementById('score-banner').style.display = 'block';
+        document.getElementById('score-banner').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetAll() {
+        document.querySelectorAll('input[type="radio"]').forEach(inp => {
+            inp.checked = false;
+            inp.disabled = false;
+            inp.parentElement.classList.remove('correct','wrong');
+        });
+        document.querySelectorAll('.feedback').forEach(fb => {
+            fb.textContent = '';
+            fb.className = 'feedback';
+        });
+        document.querySelectorAll('.check-btn').forEach(btn => btn.disabled = false);
+        document.querySelectorAll('.odd-group').forEach(g => {
+            delete g.dataset.answered;
+            g.querySelectorAll('button').forEach(b => {
+                b.disabled = false;
+                b.classList.remove('selected-correct','selected-wrong');
+            });
+        });
+        for (let k in answered) delete answered[k];
+        document.getElementById('score-banner').style.display = 'none';
+    }
+</script>
+</body>
+</html>
