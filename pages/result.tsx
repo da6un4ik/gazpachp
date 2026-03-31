@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GeneratedRecipe } from '@/lib/generateRecipe';
 
 const modeMap: Record<string, string> = {
@@ -12,6 +12,8 @@ const modeMap: Record<string, string> = {
   random: 'Рандом'
 };
 
+const recipeCache = new Map<string, GeneratedRecipe>();
+
 export default function ResultPage() {
   const router = useRouter();
   const modeParam = typeof router.query.mode === 'string' ? router.query.mode : 'random';
@@ -19,40 +21,84 @@ export default function ResultPage() {
 
   const [recipe, setRecipe] = useState<GeneratedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const queryMode = useMemo(() => encodeURIComponent(modeParam), [modeParam]);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const loadRecipe = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const loadRecipe = useCallback(
+    async (forceRefresh = false) => {
+      const cacheKey = queryMode;
+      const cachedRecipe = recipeCache.get(cacheKey);
 
-    try {
-      const response = await fetch(`/api/recipe?mode=${queryMode}`);
-      const payload = (await response.json()) as GeneratedRecipe | { error?: string };
-
-      if (!response.ok) {
-        throw new Error(
-          typeof (payload as { error?: string }).error === 'string'
-            ? (payload as { error: string }).error
-            : 'Не удалось получить рецепт.'
-        );
+      if (!forceRefresh && cachedRecipe) {
+        setRecipe(cachedRecipe);
+        setIsLoading(false);
+        setError(null);
+        return;
       }
 
-      setRecipe(payload as GeneratedRecipe);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Ошибка загрузки рецепта.');
-      setRecipe(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [queryMode]);
+      if (recipe) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
+
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        const response = await fetch(`/api/recipe?mode=${queryMode}`, {
+          signal: controller.signal
+        });
+
+        const payload = (await response.json()) as GeneratedRecipe | { error?: string };
+
+        if (!response.ok) {
+          throw new Error(
+            typeof (payload as { error?: string }).error === 'string'
+              ? (payload as { error: string }).error
+              : 'Не удалось получить рецепт.'
+          );
+        }
+
+        const nextRecipe = payload as GeneratedRecipe;
+        recipeCache.set(cacheKey, nextRecipe);
+        setRecipe(nextRecipe);
+      } catch (loadError) {
+        if ((loadError as Error).name === 'AbortError') {
+          return;
+        }
+
+        setError(loadError instanceof Error ? loadError.message : 'Ошибка загрузки рецепта.');
+
+        if (!recipe) {
+          setRecipe(null);
+        }
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [queryMode, recipe]
+  );
 
   useEffect(() => {
-    void loadRecipe();
-  }, [loadRecipe]);
+    if (!router.isReady) {
+      return;
+    }
 
-  if (isLoading) {
+    void loadRecipe();
+
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [loadRecipe, router.isReady]);
+
+  if (isLoading && !recipe) {
     return (
       <>
         <Head>
@@ -74,7 +120,14 @@ export default function ResultPage() {
       </Head>
 
       <main className="flex min-h-screen items-center justify-center bg-white px-6 py-12">
-        <section className="animate-fade-in w-full max-w-3xl rounded-[2rem] border border-zinc-100 bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.08)] sm:p-10">
+        <section className="animate-fade-in relative w-full max-w-3xl rounded-[2rem] border border-zinc-100 bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.08)] sm:p-10">
+          {isRefreshing && (
+            <div className="absolute right-6 top-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-xs text-zinc-600">
+              <span className="h-3 w-3 animate-spin rounded-full border border-zinc-300 border-t-zinc-700" />
+              Обновляем...
+            </div>
+          )}
+
           <p className="text-center text-sm uppercase tracking-[0.2em] text-zinc-500">Режим: {modeLabel}</p>
 
           {!error && recipe && (
@@ -123,7 +176,7 @@ export default function ResultPage() {
             <button
               type="button"
               onClick={() => {
-                void loadRecipe();
+                void loadRecipe(true);
               }}
               className="inline-flex w-full justify-center rounded-full bg-zinc-900 px-6 py-3 text-base font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-lg sm:w-auto"
             >

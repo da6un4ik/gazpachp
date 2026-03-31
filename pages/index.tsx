@@ -9,6 +9,19 @@ const modes = [
   { key: 'random', label: 'Рандом' }
 ];
 
+const warmedModes = new Set<string>();
+
+function warmRecipe(mode: string) {
+  if (warmedModes.has(mode)) {
+    return;
+  }
+
+  warmedModes.add(mode);
+  void fetch(`/api/recipe?mode=${encodeURIComponent(mode)}`).catch(() => {
+    warmedModes.delete(mode);
+  });
+}
+
 export default function HomeIndexPage() {
   return (
     <>
@@ -34,6 +47,9 @@ export default function HomeIndexPage() {
               <Link
                 key={mode.key}
                 href={`/result?mode=${mode.key}`}
+                prefetch
+                onMouseEnter={() => warmRecipe(mode.key)}
+                onFocus={() => warmRecipe(mode.key)}
                 className="group animate-fade-in flex min-h-40 items-center justify-center rounded-3xl border border-zinc-200 bg-white px-6 py-7 text-lg font-medium text-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-zinc-300 hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
