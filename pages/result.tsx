@@ -65,6 +65,21 @@ export default function ResultPage() {
     };
   }, [queryMode, refreshKey]);
 
+  if (isLoading) {
+    return (
+      <>
+        <Head>
+          <title>Результат режима</title>
+        </Head>
+
+        <main className="flex min-h-screen flex-col items-center justify-center gap-5 bg-white px-6 py-12 text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-900" />
+          <p className="text-xl font-medium tracking-tight text-zinc-800">Готовим завтрак...</p>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -75,19 +90,7 @@ export default function ResultPage() {
         <section className="w-full max-w-3xl rounded-[2rem] border border-zinc-100 bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.08)] sm:p-10">
           <p className="text-center text-sm uppercase tracking-[0.2em] text-zinc-500">Режим: {modeLabel}</p>
 
-          {isLoading && (
-            <div className="mt-8 rounded-2xl border border-zinc-100 bg-zinc-50 px-5 py-10 text-center">
-              <p className="text-xl font-medium text-zinc-800">Готовим завтрак...</p>
-            </div>
-          )}
-
-          {!isLoading && error && (
-            <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-center">
-              <p className="text-base text-red-700">{error}</p>
-            </div>
-          )}
-
-          {!isLoading && !error && recipe && (
+          {!error && recipe && (
             <>
               <h1 className="mt-3 text-center text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
                 {recipe.title}
@@ -113,6 +116,12 @@ export default function ResultPage() {
                 ))}
               </ol>
             </>
+          )}
+
+          {error && (
+            <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-center">
+              <p className="text-base text-red-700">{error}</p>
+            </div>
           )}
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
