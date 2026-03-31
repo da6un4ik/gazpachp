@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { GeneratedRecipe } from '@/lib/generateRecipe';
 
 const modeMap: Record<string, string> = {
@@ -20,50 +20,37 @@ export default function ResultPage() {
   const [recipe, setRecipe] = useState<GeneratedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const queryMode = useMemo(() => encodeURIComponent(modeParam), [modeParam]);
 
-  useEffect(() => {
-    let isActive = true;
+  const loadRecipe = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-    async function loadRecipe() {
-      setIsLoading(true);
-      setError(null);
+    try {
+      const response = await fetch(`/api/recipe?mode=${queryMode}`);
+      const payload = (await response.json()) as GeneratedRecipe | { error?: string };
 
-      try {
-        const response = await fetch(`/api/recipe?mode=${queryMode}`);
-        const payload = (await response.json()) as GeneratedRecipe | { error?: string };
-
-        if (!response.ok) {
-          throw new Error(
-            typeof (payload as { error?: string }).error === 'string'
-              ? (payload as { error: string }).error
-              : 'Не удалось получить рецепт.'
-          );
-        }
-
-        if (isActive) {
-          setRecipe(payload as GeneratedRecipe);
-        }
-      } catch (loadError) {
-        if (isActive) {
-          setError(loadError instanceof Error ? loadError.message : 'Ошибка загрузки рецепта.');
-          setRecipe(null);
-        }
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
+      if (!response.ok) {
+        throw new Error(
+          typeof (payload as { error?: string }).error === 'string'
+            ? (payload as { error: string }).error
+            : 'Не удалось получить рецепт.'
+        );
       }
+
+      setRecipe(payload as GeneratedRecipe);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Ошибка загрузки рецепта.');
+      setRecipe(null);
+    } finally {
+      setIsLoading(false);
     }
+  }, [queryMode]);
 
+  useEffect(() => {
     void loadRecipe();
-
-    return () => {
-      isActive = false;
-    };
-  }, [queryMode, refreshKey]);
+  }, [loadRecipe]);
 
   if (isLoading) {
     return (
@@ -135,7 +122,9 @@ export default function ResultPage() {
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={() => setRefreshKey((prev) => prev + 1)}
+              onClick={() => {
+                void loadRecipe();
+              }}
               className="inline-flex w-full justify-center rounded-full bg-zinc-900 px-6 py-3 text-base font-medium text-white transition hover:bg-zinc-800 sm:w-auto"
             >
               Другой рецепт
