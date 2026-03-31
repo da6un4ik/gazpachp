@@ -20,23 +20,24 @@ export default function HomeIndexPage() {
         />
       </Head>
 
-      <main className="flex min-h-screen items-center justify-center bg-white px-6 py-12">
-        <section className="w-full max-w-5xl text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 sm:text-6xl">
+      <main className="flex min-h-screen items-center justify-center bg-white px-6 py-14 sm:px-8">
+        <section className="animate-fade-in w-full max-w-6xl text-center">
+          <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-6xl">
             Твой завтрак за 10 секунд
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-zinc-600 sm:text-xl">
+          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-zinc-600 sm:text-xl">
             Без мук выбора.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {modes.map((mode) => (
+            {modes.map((mode, index) => (
               <Link
                 key={mode.key}
                 href={`/result?mode=${mode.key}`}
-                className="group flex min-h-36 items-center justify-center rounded-3xl border border-zinc-200 bg-white px-5 py-6 text-lg font-medium text-zinc-800 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-zinc-300 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                className="group animate-fade-in flex min-h-40 items-center justify-center rounded-3xl border border-zinc-200 bg-white px-6 py-7 text-lg font-medium text-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-zinc-300 hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <span className="transition group-hover:scale-105">{mode.label}</span>
+                <span className="transition-transform duration-300 group-hover:scale-105">{mode.label}</span>
               </Link>
             ))}
           </div>

@@ -9,3 +9,20 @@
 body {
   @apply bg-white text-zinc-900 antialiased;
 }
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.45s ease-out both;
+  }
+}
