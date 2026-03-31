@@ -92,6 +92,14 @@ export default function ResultPage() {
 
           {!error && recipe && (
             <>
+              <div className="mt-6 overflow-hidden rounded-3xl">
+                <img
+                  src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=80"
+                  alt="Временное изображение блюда"
+                  className="h-56 w-full object-cover sm:h-64"
+                />
+              </div>
+
               <h1 className="mt-3 text-center text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
                 {recipe.title}
               </h1>
