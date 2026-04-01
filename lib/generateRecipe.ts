@@ -8,6 +8,11 @@ export type GeneratedRecipe = {
   steps: string[];
 };
 
+type GenerateRecipeOptions = {
+  nonce?: string;
+  excludeTitle?: string;
+};
+
 const AI_API_URL = process.env.AI_API_URL;
 const AI_API_KEY = process.env.AI_API_KEY;
 const AI_PROVIDER = process.env.AI_PROVIDER ?? 'generic';
@@ -141,9 +146,11 @@ function extractRecipeFromPayload(payload: unknown): unknown {
   return payload;
 }
 
-function buildHuggingFaceRequest(mode: string) {
+function buildHuggingFaceRequest(mode: string, options: GenerateRecipeOptions = {}) {
   const endpoint = AI_API_URL ?? 'https://router.huggingface.co/v1/chat/completions';
   const goal = mapModeToGoal(mode);
+  const nonce = options.nonce ?? String(Date.now());
+  const excludeTitle = options.excludeTitle ? `\n- Не повторяй рецепт с названием: ${options.excludeTitle}` : "";
 
   return {
     endpoint,
@@ -179,9 +186,8 @@ function buildHuggingFaceRequest(mode: string) {
 ` +
             `- Опиши вкус и текстуру блюда
 ` +
-            `- Добавь 1–2 вариации рецепта
-
-` +
+            `- Добавь 1–2 вариации рецепта${excludeTitle}\n` +
+            `- Сделай вариант отличающимся от прошлых. Технический nonce: ${nonce}\n\n` +
             `Верни строго JSON со структурой:
 ` +
             `{
@@ -218,7 +224,7 @@ function buildHuggingFaceRequest(mode: string) {
   };
 }
 
-function buildGenericRequest(mode: string) {
+function buildGenericRequest(mode: string, options: GenerateRecipeOptions = {}) {
   if (!AI_API_URL) {
     throw new Error('AI_API_URL is not configured.');
   }
@@ -228,6 +234,8 @@ function buildGenericRequest(mode: string) {
     body: {
       mode,
       goal: mapModeToGoal(mode),
+      nonce: options.nonce ?? String(Date.now()),
+      excludeTitle: options.excludeTitle ?? null,
       response_format: {
         type: 'json_schema',
         json_schema: {
@@ -296,7 +304,7 @@ function fallbackRecipe(mode: string): GeneratedRecipe {
   };
 }
 
-export async function generateRecipe(mode: string): Promise<GeneratedRecipe> {
+export async function generateRecipe(mode: string, options: GenerateRecipeOptions = {}): Promise<GeneratedRecipe> {
   if (!mode || typeof mode !== 'string') {
     throw new Error('Mode is required and must be a string.');
   }
@@ -305,7 +313,7 @@ export async function generateRecipe(mode: string): Promise<GeneratedRecipe> {
     throw new Error('AI_API_KEY is not configured.');
   }
 
-  const requestConfig = AI_PROVIDER === 'huggingface' ? buildHuggingFaceRequest(mode) : buildGenericRequest(mode);
+  const requestConfig = AI_PROVIDER === 'huggingface' ? buildHuggingFaceRequest(mode, options) : buildGenericRequest(mode, options);
 
   let response: Response;
 

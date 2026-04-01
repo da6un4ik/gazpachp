@@ -14,17 +14,20 @@ const modeMap: Record<string, string> = {
 
 const recipeCache = new Map<string, GeneratedRecipe>();
 
-function fallbackClientRecipe(mode: string): GeneratedRecipe {
-  const labels: Record<string, string> = {
-    'weight-loss': 'Легкий омлет со шпинатом',
-    protein: 'Протеиновый тост с творогом',
-    kids: 'Банановые мини-панкейки',
-    quick: 'Йогурт-боул за 5 минут',
-    random: 'Овсянка с орехами и ягодами'
+function fallbackClientRecipe(mode: string, nonce: number): GeneratedRecipe {
+  const variants: Record<string, string[]> = {
+    'weight-loss': ['Легкий омлет со шпинатом', 'Йогурт-боул с ягодами'],
+    protein: ['Протеиновый тост с творогом', 'Яичный скрэмбл с индейкой'],
+    kids: ['Банановые мини-панкейки', 'Сырники с йогуртом'],
+    quick: ['Йогурт-боул за 5 минут', 'Тост с авокадо и яйцом'],
+    random: ['Овсянка с орехами и ягодами', 'Омлет с овощами']
   };
 
+  const pool = variants[mode] ?? variants.random;
+  const title = pool[Math.abs(nonce) % pool.length];
+
   return {
-    title: labels[mode] ?? labels.random,
+    title,
     calories: 360,
     protein: 24,
     fat: 14,
@@ -39,6 +42,31 @@ function fallbackClientRecipe(mode: string): GeneratedRecipe {
   };
 }
 
+function getRecipeImageByTitle(title: string) {
+  const t = title.toLowerCase();
+
+  if (t.includes('омлет') || t.includes('яич')) {
+    return 'https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=1200&q=80';
+  }
+
+  if (t.includes('панкейк') || t.includes('сырник')) {
+    return 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=1200&q=80';
+  }
+
+  if (t.includes('тост')) {
+    return 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80';
+  }
+
+  if (t.includes('йогурт')) {
+    return 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80';
+  }
+
+  if (t.includes('овсян')) {
+    return 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=1200&q=80';
+  }
+
+  return 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=80';
+}
 
 export default function ResultPage() {
   const router = useRouter();
@@ -49,13 +77,15 @@ export default function ResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nonce, setNonce] = useState(() => Date.now());
 
   const queryMode = useMemo(() => encodeURIComponent(modeParam), [modeParam]);
   const abortRef = useRef<AbortController | null>(null);
+  const lastTitleRef = useRef<string>('');
 
   const loadRecipe = useCallback(
     async (forceRefresh = false) => {
-      const cacheKey = queryMode;
+      const cacheKey = `${queryMode}:${nonce}`;
       const cachedRecipe = recipeCache.get(cacheKey);
 
       if (!forceRefresh && cachedRecipe) {
@@ -77,37 +107,43 @@ export default function ResultPage() {
       abortRef.current = controller;
 
       try {
-        const response = await fetch(`/api/recipe?mode=${queryMode}`, {
-          signal: controller.signal
-        });
+        const response = await fetch(
+          `/api/recipe?mode=${queryMode}&nonce=${nonce}&excludeTitle=${encodeURIComponent(lastTitleRef.current)}`,
+          {
+            signal: controller.signal
+          }
+        );
 
-        const payload = (await response.json()) as GeneratedRecipe | { error?: string };
+        const payload = (await response.json()) as GeneratedRecipe;
 
         if (!response.ok) {
-          const fallback = fallbackClientRecipe(modeParam);
+          const fallback = fallbackClientRecipe(modeParam, nonce);
           recipeCache.set(cacheKey, fallback);
           setRecipe(fallback);
+          lastTitleRef.current = fallback.title;
           return;
         }
 
-        const nextRecipe = payload as GeneratedRecipe;
+        const nextRecipe = payload;
         recipeCache.set(cacheKey, nextRecipe);
         setRecipe(nextRecipe);
+        lastTitleRef.current = nextRecipe.title;
       } catch (loadError) {
         if ((loadError as Error).name === 'AbortError') {
           return;
         }
 
-        const fallback = fallbackClientRecipe(modeParam);
+        const fallback = fallbackClientRecipe(modeParam, nonce);
         recipeCache.set(cacheKey, fallback);
         setRecipe(fallback);
+        lastTitleRef.current = fallback.title;
         setError(null);
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
       }
     },
-    [modeParam, queryMode, recipe]
+    [modeParam, nonce, queryMode, recipe]
   );
 
   useEffect(() => {
@@ -158,8 +194,8 @@ export default function ResultPage() {
             <>
               <div className="mt-6 overflow-hidden rounded-3xl">
                 <img
-                  src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=80"
-                  alt="Временное изображение блюда"
+                  src={getRecipeImageByTitle(recipe.title)}
+                  alt={`Фото блюда: ${recipe.title}`}
                   className="h-56 w-full object-cover sm:h-64"
                 />
               </div>
@@ -200,7 +236,7 @@ export default function ResultPage() {
             <button
               type="button"
               onClick={() => {
-                void loadRecipe(true);
+                setNonce(Date.now());
               }}
               className="inline-flex w-full justify-center rounded-full bg-zinc-900 px-6 py-3 text-base font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-lg sm:w-auto"
             >
