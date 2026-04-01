@@ -10,6 +10,7 @@ const FALLBACK_DATASET: RecipeRecord[] = [
   {
     mode: 'protein',
     title: 'Cottage Cheese Protein Toast',
+    description: 'Savory toast with creamy cottage cheese and egg for a filling start.',
     calories: 360,
     protein: 24,
     fat: 14,
@@ -17,7 +18,9 @@ const FALLBACK_DATASET: RecipeRecord[] = [
     time: '10 min',
     servingSize: '1 serving (~300 g)',
     ingredients: ['Wholegrain bread — 60 g', 'Cottage cheese — 120 g', 'Egg — 1 pc (50 g)', 'Cherry tomatoes — 80 g'],
-    steps: ['Toast the bread.', 'Mix cottage cheese with herbs.', 'Cook egg to preferred doneness.', 'Top toast with cottage cheese, egg, and tomatoes.']
+    steps: ['Toast the bread.', 'Mix cottage cheese with herbs.', 'Cook egg to preferred doneness.', 'Top toast with cottage cheese, egg, and tomatoes.'],
+    whyFitsGoal: 'High protein and balanced fats support satiety and muscle recovery.',
+    variations: ['Swap bread for rye crispbread.', 'Add sliced avocado for extra healthy fats.']
   }
 ];
 
@@ -113,6 +116,7 @@ function normalizeRow(headers: string[], row: string[]): RecipeRecord | null {
   return {
     mode: pickMode(title),
     title,
+    description: map.description || map.summary || 'Simple homemade breakfast with balanced taste and texture.',
     calories: toNumber(map.calories || map.calories_kcal || map.kcal) || 350,
     protein: toNumber(map.protein || map.protein_g) || 20,
     fat: toNumber(map.fat || map.fat_g) || 12,
@@ -120,7 +124,14 @@ function normalizeRow(headers: string[], row: string[]): RecipeRecord | null {
     time: map.time || map.total_time || '15 min',
     servingSize: map.servings || map.servingsize || '1 serving (~300 g)',
     ingredients,
-    steps: steps.slice(0, 6)
+    steps: steps.slice(0, 6),
+    whyFitsGoal:
+      map.whyfitsgoal ||
+      map.goal_reason ||
+      'Recipe matches the selected goal with practical ingredients and balanced macros.',
+    variations: splitList(map.variations).slice(0, 2).length > 0
+      ? splitList(map.variations).slice(0, 2)
+      : ['Use seasonal vegetables for flavor changes.', 'Adjust spices to taste without changing macros much.']
   };
 }
 
