@@ -13,25 +13,87 @@ const AI_API_KEY = process.env.AI_API_KEY;
 const AI_PROVIDER = process.env.AI_PROVIDER ?? 'generic';
 const HF_MODEL = process.env.HF_MODEL ?? 'meta-llama/Llama-3.1-8B-Instruct';
 
-function isGeneratedRecipe(value: unknown): value is GeneratedRecipe {
+function toNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value.replace(',', '.').match(/-?\d+(\.\d+)?/)?.[0]);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
+function normalizeSteps(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((step): step is string => typeof step === 'string').map((step) => step.trim()).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/\n|\r|\d+\.|•|-/)
+      .map((step) => step.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function normalizeRecipe(value: unknown): GeneratedRecipe | null {
   if (!value || typeof value !== 'object') {
-    return false;
+    return null;
   }
 
   const data = value as Record<string, unknown>;
+  const title = (data.title ?? data.name ?? data.dish) as unknown;
+  const time = (data.time ?? data.prep_time ?? data.cook_time) as unknown;
 
-  return (
-    typeof data.title === 'string' &&
-    typeof data.calories === 'number' &&
-    typeof data.protein === 'number' &&
-    typeof data.fat === 'number' &&
-    typeof data.carbs === 'number' &&
-    typeof data.time === 'string' &&
-    Array.isArray(data.steps) &&
-    data.steps.length >= 3 &&
-    data.steps.length <= 6 &&
-    data.steps.every((step) => typeof step === 'string')
-  );
+  const recipe: GeneratedRecipe = {
+    title: typeof title === 'string' ? title.trim() : '',
+    calories: toNumber(data.calories ?? data.kcal) ?? NaN,
+    protein: toNumber(data.protein ?? data.proteins) ?? NaN,
+    fat: toNumber(data.fat ?? data.fats) ?? NaN,
+    carbs: toNumber(data.carbs ?? data.carbohydrates) ?? NaN,
+    time: typeof time === 'string' ? time.trim() : '',
+    steps: normalizeSteps(data.steps ?? data.instructions)
+  };
+
+  const valid =
+    recipe.title.length > 0 &&
+    Number.isFinite(recipe.calories) &&
+    Number.isFinite(recipe.protein) &&
+    Number.isFinite(recipe.fat) &&
+    Number.isFinite(recipe.carbs) &&
+    recipe.time.length > 0 &&
+    recipe.steps.length >= 3;
+
+  if (!valid) {
+    return null;
+  }
+
+  recipe.steps = recipe.steps.slice(0, 6);
+  return recipe;
+}
+
+function extractJsonFromText(content: string): unknown {
+  const trimmed = content.trim();
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+    if (fenced) {
+      try {
+        return JSON.parse(fenced.trim());
+      } catch {
+        return trimmed;
+      }
+    }
+
+    return trimmed;
+  }
 }
 
 function extractRecipeFromPayload(payload: unknown): unknown {
@@ -45,11 +107,7 @@ function extractRecipeFromPayload(payload: unknown): unknown {
   const content = (payload as { choices?: Array<{ message?: { content?: unknown } }> })?.choices?.[0]?.message?.content;
 
   if (typeof content === 'string') {
-    try {
-      return JSON.parse(content);
-    } catch {
-      return content;
-    }
+    return extractJsonFromText(content);
   }
 
   if (Array.isArray(content)) {
@@ -58,11 +116,7 @@ function extractRecipeFromPayload(payload: unknown): unknown {
       | undefined;
 
     if (textPart?.text) {
-      try {
-        return JSON.parse(textPart.text);
-      } catch {
-        return textPart.text;
-      }
+      return extractJsonFromText(textPart.text);
     }
   }
 
@@ -81,7 +135,7 @@ function buildHuggingFaceRequest(mode: string) {
         {
           role: 'system',
           content:
-            'Ты помощник по завтракам. Верни только JSON без markdown. Поля: title, calories, protein, fat, carbs, time, steps (3-6 шагов).'
+            'Ты помощник по завтракам. Верни только JSON без markdown. Поля: title, calories, protein, fat, carbs, time, steps (3-6 шагов). Числа только number, не строка.'
         },
         {
           role: 'user',
@@ -172,10 +226,11 @@ export async function generateRecipe(mode: string): Promise<GeneratedRecipe> {
   }
 
   const data = extractRecipeFromPayload(payload);
+  const recipe = normalizeRecipe(data);
 
-  if (!isGeneratedRecipe(data)) {
+  if (!recipe) {
     throw new Error('AI API response does not match recipe format.');
   }
 
-  return data;
+  return recipe;
 }
