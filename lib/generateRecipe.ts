@@ -13,6 +13,19 @@ const AI_API_KEY = process.env.AI_API_KEY;
 const AI_PROVIDER = process.env.AI_PROVIDER ?? 'generic';
 const HF_MODEL = process.env.HF_MODEL ?? 'meta-llama/Llama-3.1-8B-Instruct';
 
+
+function mapModeToGoal(mode: string): string {
+  const goalByMode: Record<string, string> = {
+    'weight-loss': 'Похудение',
+    protein: 'Высокобелковый завтрак',
+    kids: 'Детский сбалансированный завтрак',
+    quick: 'Максимально быстрый завтрак',
+    random: 'Сбалансированный универсальный завтрак'
+  };
+
+  return goalByMode[mode] ?? goalByMode.random;
+}
+
 function toNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
@@ -130,6 +143,7 @@ function extractRecipeFromPayload(payload: unknown): unknown {
 
 function buildHuggingFaceRequest(mode: string) {
   const endpoint = AI_API_URL ?? 'https://router.huggingface.co/v1/chat/completions';
+  const goal = mapModeToGoal(mode);
 
   return {
     endpoint,
@@ -140,11 +154,61 @@ function buildHuggingFaceRequest(mode: string) {
         {
           role: 'system',
           content:
-            'Ты помощник по завтракам. Верни только JSON без markdown. Поля: title, calories, protein, fat, carbs, time, steps (3-6 шагов). Числа только number, не строка.'
+            'Ты — профессиональный нутрициолог и шеф-повар. Отвечай только валидным JSON без markdown и без лишнего текста.'
         },
         {
           role: 'user',
-          content: `Подбери один рецепт завтрака для режима: ${mode}.`
+          content:
+            `Создай рецепт завтрака на основе заданной цели.
+
+` +
+            `Цель: ${goal}
+
+` +
+            `Требования:
+` +
+            `- Рецепт должен быть реалистичным и простым для приготовления дома
+` +
+            `- Время приготовления: до 20 минут
+` +
+            `- Ингредиенты — доступные (обычный супермаркет)
+` +
+            `- Укажи точные граммовки
+` +
+            `- Укажи калории и БЖУ (белки, жиры, углеводы)
+` +
+            `- Опиши вкус и текстуру блюда
+` +
+            `- Добавь 1–2 вариации рецепта
+
+` +
+            `Верни строго JSON со структурой:
+` +
+            `{
+` +
+            `  "title": string,
+` +
+            `  "description": string,
+` +
+            `  "ingredients": string[],
+` +
+            `  "steps": string[],
+` +
+            `  "calories": number,
+` +
+            `  "protein": number,
+` +
+            `  "fat": number,
+` +
+            `  "carbs": number,
+` +
+            `  "time": string,
+` +
+            `  "whyFitsGoal": string,
+` +
+            `  "variations": string[]
+` +
+            `}`
         }
       ],
       response_format: {
@@ -163,6 +227,7 @@ function buildGenericRequest(mode: string) {
     endpoint: AI_API_URL,
     body: {
       mode,
+      goal: mapModeToGoal(mode),
       response_format: {
         type: 'json_schema',
         json_schema: {
@@ -176,14 +241,27 @@ function buildGenericRequest(mode: string) {
               fat: { type: 'number' },
               carbs: { type: 'number' },
               time: { type: 'string' },
+              description: { type: 'string' },
+              ingredients: {
+                type: 'array',
+                items: { type: 'string' },
+                minItems: 3
+              },
               steps: {
                 type: 'array',
                 items: { type: 'string' },
                 minItems: 3,
                 maxItems: 6
+              },
+              whyFitsGoal: { type: 'string' },
+              variations: {
+                type: 'array',
+                items: { type: 'string' },
+                minItems: 1,
+                maxItems: 2
               }
             },
-            required: ['title', 'calories', 'protein', 'fat', 'carbs', 'time', 'steps'],
+            required: ['title', 'description', 'ingredients', 'calories', 'protein', 'fat', 'carbs', 'time', 'steps', 'whyFitsGoal', 'variations'],
             additionalProperties: false
           }
         }
