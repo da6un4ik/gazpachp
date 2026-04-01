@@ -120,6 +120,11 @@ function extractRecipeFromPayload(payload: unknown): unknown {
     }
   }
 
+  const generatedText = (payload as Array<{ generated_text?: unknown }>)?.[0]?.generated_text;
+  if (typeof generatedText === 'string') {
+    return extractJsonFromText(generatedText);
+  }
+
   return payload;
 }
 
@@ -187,6 +192,32 @@ function buildGenericRequest(mode: string) {
   };
 }
 
+
+function fallbackRecipe(mode: string): GeneratedRecipe {
+  const labels: Record<string, string> = {
+    'weight-loss': 'Легкий омлет со шпинатом',
+    protein: 'Протеиновый тост с творогом',
+    kids: 'Банановые мини-панкейки',
+    quick: 'Йогурт-боул за 5 минут',
+    random: 'Овсянка с орехами и ягодами'
+  };
+
+  return {
+    title: labels[mode] ?? labels.random,
+    calories: 360,
+    protein: 24,
+    fat: 14,
+    carbs: 32,
+    time: '8-10 минут',
+    steps: [
+      'Подготовь ингредиенты и разогрей сковороду или сотейник.',
+      'Смешай основные ингредиенты до однородности.',
+      'Готовь 5–7 минут на среднем огне, периодически помешивая.',
+      'Подавай сразу, добавив топпинг по вкусу.'
+    ]
+  };
+}
+
 export async function generateRecipe(mode: string): Promise<GeneratedRecipe> {
   if (!mode || typeof mode !== 'string') {
     throw new Error('Mode is required and must be a string.');
@@ -229,7 +260,7 @@ export async function generateRecipe(mode: string): Promise<GeneratedRecipe> {
   const recipe = normalizeRecipe(data);
 
   if (!recipe) {
-    throw new Error('AI API response does not match recipe format.');
+    return fallbackRecipe(mode);
   }
 
   return recipe;
