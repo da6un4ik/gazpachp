@@ -5,6 +5,8 @@ export type GeneratedRecipe = {
   fat: number;
   carbs: number;
   time: string;
+  servingSize: string;
+  ingredients: string[];
   steps: string[];
 };
 
@@ -44,6 +46,18 @@ function toNumber(value: unknown): number | null {
   return null;
 }
 
+function normalizeStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value.split(/\n|\r|,|•|-/).map((item) => item.trim()).filter(Boolean);
+  }
+
+  return [];
+}
+
 function normalizeSteps(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.filter((step): step is string => typeof step === 'string').map((step) => step.trim()).filter(Boolean);
@@ -67,6 +81,7 @@ function normalizeRecipe(value: unknown): GeneratedRecipe | null {
   const data = value as Record<string, unknown>;
   const title = (data.title ?? data.name ?? data.dish) as unknown;
   const time = (data.time ?? data.prep_time ?? data.cook_time) as unknown;
+  const servingSize = (data.servingSize ?? data.serving_size ?? data.portion ?? data.portion_size) as unknown;
 
   const recipe: GeneratedRecipe = {
     title: typeof title === 'string' ? title.trim() : '',
@@ -75,6 +90,8 @@ function normalizeRecipe(value: unknown): GeneratedRecipe | null {
     fat: toNumber(data.fat ?? data.fats) ?? NaN,
     carbs: toNumber(data.carbs ?? data.carbohydrates) ?? NaN,
     time: typeof time === 'string' ? time.trim() : '',
+    servingSize: typeof servingSize === 'string' ? servingSize.trim() : '1 порция (~300 г)',
+    ingredients: normalizeStringList(data.ingredients),
     steps: normalizeSteps(data.steps ?? data.instructions)
   };
 
@@ -85,12 +102,14 @@ function normalizeRecipe(value: unknown): GeneratedRecipe | null {
     Number.isFinite(recipe.fat) &&
     Number.isFinite(recipe.carbs) &&
     recipe.time.length > 0 &&
+    recipe.ingredients.length >= 3 &&
     recipe.steps.length >= 3;
 
   if (!valid) {
     return null;
   }
 
+  recipe.ingredients = recipe.ingredients.slice(0, 20);
   recipe.steps = recipe.steps.slice(0, 6);
   return recipe;
 }
@@ -198,6 +217,8 @@ function buildHuggingFaceRequest(mode: string, options: GenerateRecipeOptions = 
 ` +
             `  "ingredients": string[],
 ` +
+            `  "servingSize": string,
+` +
             `  "steps": string[],
 ` +
             `  "calories": number,
@@ -255,6 +276,7 @@ function buildGenericRequest(mode: string, options: GenerateRecipeOptions = {}) 
                 items: { type: 'string' },
                 minItems: 3
               },
+              servingSize: { type: 'string' },
               steps: {
                 type: 'array',
                 items: { type: 'string' },
@@ -269,7 +291,7 @@ function buildGenericRequest(mode: string, options: GenerateRecipeOptions = {}) 
                 maxItems: 2
               }
             },
-            required: ['title', 'description', 'ingredients', 'calories', 'protein', 'fat', 'carbs', 'time', 'steps', 'whyFitsGoal', 'variations'],
+            required: ['title', 'description', 'ingredients', 'servingSize', 'calories', 'protein', 'fat', 'carbs', 'time', 'steps', 'whyFitsGoal', 'variations'],
             additionalProperties: false
           }
         }
@@ -295,6 +317,8 @@ function fallbackRecipe(mode: string): GeneratedRecipe {
     fat: 14,
     carbs: 32,
     time: '8-10 минут',
+    servingSize: '1 порция (~300 г)',
+    ingredients: ['Яйца — 2 шт (100 г)', 'Творог — 80 г', 'Хлеб цельнозерновой — 60 г', 'Овощи — 80 г'],
     steps: [
       'Подготовь ингредиенты и разогрей сковороду или сотейник.',
       'Смешай основные ингредиенты до однородности.',

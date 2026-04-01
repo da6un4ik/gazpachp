@@ -33,6 +33,8 @@ function fallbackClientRecipe(mode: string, nonce: number): GeneratedRecipe {
     fat: 14,
     carbs: 32,
     time: '8-10 минут',
+    servingSize: '1 порция (~300 г)',
+    ingredients: ['Яйца — 2 шт (100 г)', 'Творог — 80 г', 'Хлеб цельнозерновой — 60 г', 'Овощи — 80 г'],
     steps: [
       'Подготовь ингредиенты и разогрей посуду.',
       'Смешай основные ингредиенты до однородности.',
@@ -203,13 +205,24 @@ export default function ResultPage() {
               <h1 className="mt-4 text-center text-3xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-4xl">
                 {recipe.title}
               </h1>
+              <p className="mt-2 text-center text-sm text-zinc-500">КБЖУ указаны на 1 порцию</p>
 
               <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
                 <StatCard label="Ккал" value={recipe.calories.toString()} />
                 <StatCard label="Белки" value={`${recipe.protein} г`} />
                 <StatCard label="Жиры" value={`${recipe.fat} г`} />
                 <StatCard label="Углеводы" value={`${recipe.carbs} г`} />
-                <StatCard label="Время" value={recipe.time} className="col-span-2 sm:col-span-1" />
+                <StatCard label="Время" value={recipe.time} className="col-span-1" />
+                <StatCard label="Порция" value={recipe.servingSize} className="col-span-2 sm:col-span-2" />
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-500">Ингредиенты</p>
+                <ul className="mt-3 space-y-2 text-zinc-700">
+                  {recipe.ingredients.map((item, idx) => (
+                    <li key={`${item}-${idx}`} className="leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
               </div>
 
               <ol className="mt-8 space-y-3">
