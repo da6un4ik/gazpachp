@@ -80,10 +80,34 @@ export default function ResultPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nonce, setNonce] = useState(() => Date.now());
+  const [favoriteIngredients, setFavoriteIngredients] = useState<string[]>([]);
+  const [favoriteRecipe, setFavoriteRecipe] = useState<string>('');
 
   const queryMode = useMemo(() => encodeURIComponent(modeParam), [modeParam]);
   const abortRef = useRef<AbortController | null>(null);
   const lastTitleRef = useRef<string>('');
+
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const savedIngredients = window.localStorage.getItem('favoriteIngredients');
+    const savedRecipe = window.localStorage.getItem('favoriteRecipe');
+
+    if (savedIngredients) {
+      try {
+        setFavoriteIngredients(JSON.parse(savedIngredients) as string[]);
+      } catch {
+        setFavoriteIngredients([]);
+      }
+    }
+
+    if (savedRecipe) {
+      setFavoriteRecipe(savedRecipe);
+    }
+  }, []);
 
   const loadRecipe = useCallback(
     async (forceRefresh = false) => {
@@ -110,7 +134,7 @@ export default function ResultPage() {
 
       try {
         const response = await fetch(
-          `/api/recipe?mode=${queryMode}&nonce=${nonce}&excludeTitle=${encodeURIComponent(lastTitleRef.current)}`,
+          `/api/recipe?mode=${queryMode}&nonce=${nonce}&excludeTitle=${encodeURIComponent(lastTitleRef.current)}&favoriteRecipe=${encodeURIComponent(favoriteRecipe)}&favoriteIngredients=${encodeURIComponent(favoriteIngredients.join('|'))}`,
           {
             signal: controller.signal
           }
@@ -145,7 +169,7 @@ export default function ResultPage() {
         setIsRefreshing(false);
       }
     },
-    [modeParam, nonce, queryMode, recipe]
+    [favoriteIngredients, favoriteRecipe, modeParam, nonce, queryMode, recipe]
   );
 
   useEffect(() => {
@@ -191,6 +215,11 @@ export default function ResultPage() {
           )}
 
           <p className="text-center text-sm uppercase tracking-[0.2em] text-zinc-500">Режим: {modeLabel}</p>
+          {(favoriteRecipe || favoriteIngredients.length > 0) && (
+            <p className="mt-2 text-center text-xs text-zinc-500">
+              Избранное: {favoriteRecipe || 'рецепт не выбран'}{favoriteIngredients.length > 0 ? ` · ингредиенты: ${favoriteIngredients.slice(0, 3).join(', ')}` : ''}
+            </p>
+          )}
 
           {!error && recipe && (
             <>
@@ -236,6 +265,35 @@ export default function ResultPage() {
                   </li>
                 ))}
               </ol>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = recipe.ingredients.slice(0, 6);
+                    setFavoriteIngredients(next);
+                    if (typeof window !== 'undefined') {
+                      window.localStorage.setItem('favoriteIngredients', JSON.stringify(next));
+                    }
+                  }}
+                  className="rounded-full border border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900"
+                >
+                  Ингредиенты в избранное
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFavoriteRecipe(recipe.title);
+                    if (typeof window !== 'undefined') {
+                      window.localStorage.setItem('favoriteRecipe', recipe.title);
+                    }
+                  }}
+                  className="rounded-full border border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900"
+                >
+                  Рецепт в избранное
+                </button>
+              </div>
+
             </>
           )}
 

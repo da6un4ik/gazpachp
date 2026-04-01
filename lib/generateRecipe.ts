@@ -13,6 +13,8 @@ export type GeneratedRecipe = {
 type GenerateRecipeOptions = {
   nonce?: string;
   excludeTitle?: string;
+  favoriteIngredients?: string[];
+  favoriteRecipe?: string;
 };
 
 const AI_API_URL = process.env.AI_API_URL;
@@ -170,6 +172,12 @@ function buildHuggingFaceRequest(mode: string, options: GenerateRecipeOptions = 
   const goal = mapModeToGoal(mode);
   const nonce = options.nonce ?? String(Date.now());
   const excludeTitle = options.excludeTitle ? `\n- Не повторяй рецепт с названием: ${options.excludeTitle}` : "";
+  const favoriteIngredients = options.favoriteIngredients?.length
+    ? `\n- Используй в первую очередь эти любимые ингредиенты: ${options.favoriteIngredients.join(', ')}`
+    : "";
+  const favoriteRecipe = options.favoriteRecipe
+    ? `\n- Пользователь отметил любимый рецепт: ${options.favoriteRecipe}. Учитывай его вкусовой профиль.`
+    : "";
 
   return {
     endpoint,
@@ -205,7 +213,7 @@ function buildHuggingFaceRequest(mode: string, options: GenerateRecipeOptions = 
 ` +
             `- Опиши вкус и текстуру блюда
 ` +
-            `- Добавь 1–2 вариации рецепта${excludeTitle}\n` +
+            `- Добавь 1–2 вариации рецепта${excludeTitle}${favoriteIngredients}${favoriteRecipe}\n` +
             `- Сделай вариант отличающимся от прошлых. Технический nonce: ${nonce}\n\n` +
             `Верни строго JSON со структурой:
 ` +
@@ -257,6 +265,8 @@ function buildGenericRequest(mode: string, options: GenerateRecipeOptions = {}) 
       goal: mapModeToGoal(mode),
       nonce: options.nonce ?? String(Date.now()),
       excludeTitle: options.excludeTitle ?? null,
+      favoriteIngredients: options.favoriteIngredients ?? [],
+      favoriteRecipe: options.favoriteRecipe ?? null,
       response_format: {
         type: 'json_schema',
         json_schema: {
