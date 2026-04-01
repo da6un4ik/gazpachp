@@ -2,11 +2,11 @@ import Head from 'next/head';
 import Link from 'next/link';
 
 const modes = [
-  { key: 'weight-loss', label: 'Похудение' },
-  { key: 'protein', label: 'Белок' },
-  { key: 'kids', label: 'Детский' },
-  { key: 'quick', label: 'Быстрый' },
-  { key: 'random', label: 'Рандом' }
+  { key: 'weight-loss', label: 'Weight Loss' },
+  { key: 'protein', label: 'Protein' },
+  { key: 'kids', label: 'Kids' },
+  { key: 'quick', label: 'Quick' },
+  { key: 'random', label: 'Random' }
 ];
 
 const warmedModes = new Set<string>();
@@ -26,20 +26,20 @@ export default function HomeIndexPage() {
   return (
     <>
       <Head>
-        <title>Твой завтрак за 10 секунд</title>
+        <title>Your breakfast in 10 seconds</title>
         <meta
           name="description"
-          content="Минималистичный выбор режима завтрака за 10 секунд"
+          content="Minimal breakfast mode picker in 10 seconds"
         />
       </Head>
 
       <main className="flex min-h-screen items-center justify-center bg-white px-6 py-14 sm:px-8">
         <section className="animate-fade-in w-full max-w-6xl text-center">
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-6xl">
-            Твой завтрак за 10 секунд
+            Your breakfast in 10 seconds
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-zinc-600 sm:text-xl">
-            Без мук выбора.
+            No decision fatigue.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">

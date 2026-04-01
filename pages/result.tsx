@@ -5,22 +5,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GeneratedRecipe } from '@/lib/generateRecipe';
 
 const modeMap: Record<string, string> = {
-  'weight-loss': 'Похудение',
-  protein: 'Белок',
-  kids: 'Детский',
-  quick: 'Быстрый',
-  random: 'Рандом'
+  'weight-loss': 'Weight Loss',
+  protein: 'Protein',
+  kids: 'Kids',
+  quick: 'Quick',
+  random: 'Random'
 };
 
 const recipeCache = new Map<string, GeneratedRecipe>();
 
 function fallbackClientRecipe(mode: string, nonce: number): GeneratedRecipe {
   const variants: Record<string, string[]> = {
-    'weight-loss': ['Легкий омлет со шпинатом', 'Йогурт-боул с ягодами'],
-    protein: ['Протеиновый тост с творогом', 'Яичный скрэмбл с индейкой'],
-    kids: ['Банановые мини-панкейки', 'Сырники с йогуртом'],
-    quick: ['Йогурт-боул за 5 минут', 'Тост с авокадо и яйцом'],
-    random: ['Овсянка с орехами и ягодами', 'Омлет с овощами']
+    'weight-loss': ['Light Spinach Omelette', 'Berry Yogurt Bowl'],
+    protein: ['Cottage Cheese Protein Toast', 'Turkey Egg Scramble'],
+    kids: ['Banana Mini Pancakes', 'Cottage Pancakes with Yogurt'],
+    quick: ['5-Minute Yogurt Bowl', 'Avocado Egg Toast'],
+    random: ['Nutty Berry Oatmeal', 'Veggie Omelette']
   };
 
   const pool = variants[mode] ?? variants.random;
@@ -32,14 +32,14 @@ function fallbackClientRecipe(mode: string, nonce: number): GeneratedRecipe {
     protein: 24,
     fat: 14,
     carbs: 32,
-    time: '8-10 минут',
-    servingSize: '1 порция (~300 г)',
-    ingredients: ['Яйца — 2 шт (100 г)', 'Творог — 80 г', 'Хлеб цельнозерновой — 60 г', 'Овощи — 80 г'],
+    time: '8-10 min',
+    servingSize: '1 serving (~300 g)',
+    ingredients: ['Eggs — 2 pcs (100 g)', 'Cottage cheese — 80 g', 'Wholegrain bread — 60 g', 'Vegetables — 80 g'],
     steps: [
-      'Подготовь ингредиенты и разогрей посуду.',
-      'Смешай основные ингредиенты до однородности.',
-      'Готовь 5–7 минут на среднем огне.',
-      'Подавай сразу, добавив топпинг по вкусу.'
+      'Prep ingredients and heat the pan.',
+      'Mix base ingredients until smooth.',
+      'Cook for 5–7 minutes over medium heat.',
+      'Serve immediately with toppings you like.'
     ]
   };
 }
@@ -167,12 +167,12 @@ export default function ResultPage() {
     return (
       <>
         <Head>
-          <title>Результат режима</title>
+          <title>Recipe result</title>
         </Head>
 
         <main className="animate-fade-in flex min-h-screen flex-col items-center justify-center gap-5 bg-white px-6 py-12 text-center">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-900" />
-          <p className="text-xl font-medium tracking-tight text-zinc-800">Готовим завтрак...</p>
+          <p className="text-xl font-medium tracking-tight text-zinc-800">Cooking your breakfast...</p>
         </main>
       </>
     );
@@ -181,7 +181,7 @@ export default function ResultPage() {
   return (
     <>
       <Head>
-        <title>Результат режима</title>
+        <title>Recipe result</title>
       </Head>
 
       <main className="flex min-h-screen items-center justify-center bg-white px-6 py-12">
@@ -189,14 +189,14 @@ export default function ResultPage() {
           {isRefreshing && (
             <div className="absolute right-6 top-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-xs text-zinc-600">
               <span className="h-3 w-3 animate-spin rounded-full border border-zinc-300 border-t-zinc-700" />
-              Обновляем...
+              Refreshing...
             </div>
           )}
 
-          <p className="text-center text-sm uppercase tracking-[0.2em] text-zinc-500">Режим: {modeLabel}</p>
+          <p className="text-center text-sm uppercase tracking-[0.2em] text-zinc-500">Mode: {modeLabel}</p>
           {(favoriteRecipe || favoriteIngredients.length > 0) && (
             <p className="mt-2 text-center text-xs text-zinc-500">
-              Избранное: {favoriteRecipe || 'рецепт не выбран'}{favoriteIngredients.length > 0 ? ` · ингредиенты: ${favoriteIngredients.slice(0, 3).join(', ')}` : ''}
+              Favorites: {favoriteRecipe || 'no recipe selected'}{favoriteIngredients.length > 0 ? ` · ingredients: ${favoriteIngredients.slice(0, 3).join(', ')}` : ''}
             </p>
           )}
 
@@ -205,7 +205,7 @@ export default function ResultPage() {
               <div className="mt-6 overflow-hidden rounded-3xl">
                 <img
                   src={getRecipeImageByTitle(recipe.title)}
-                  alt={`Фото блюда: ${recipe.title}`}
+                  alt={`Dish photo: ${recipe.title}`}
                   className="h-56 w-full object-cover sm:h-64"
                 />
               </div>
@@ -213,19 +213,19 @@ export default function ResultPage() {
               <h1 className="mt-4 text-center text-3xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-4xl">
                 {recipe.title}
               </h1>
-              <p className="mt-2 text-center text-sm text-zinc-500">КБЖУ указаны на 1 порцию</p>
+              <p className="mt-2 text-center text-sm text-zinc-500">Calories and macros are shown per serving</p>
 
               <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                <StatCard label="Ккал" value={recipe.calories.toString()} />
-                <StatCard label="Белки" value={`${recipe.protein} г`} />
-                <StatCard label="Жиры" value={`${recipe.fat} г`} />
-                <StatCard label="Углеводы" value={`${recipe.carbs} г`} />
-                <StatCard label="Время" value={recipe.time} className="col-span-1" />
-                <StatCard label="Порция" value={recipe.servingSize} className="col-span-2 sm:col-span-2" />
+                <StatCard label="kcal" value={recipe.calories.toString()} />
+                <StatCard label="Protein" value={`${recipe.protein} g`} />
+                <StatCard label="Fat" value={`${recipe.fat} g`} />
+                <StatCard label="Carbs" value={`${recipe.carbs} g`} />
+                <StatCard label="Time" value={recipe.time} className="col-span-1" />
+                <StatCard label="Serving" value={recipe.servingSize} className="col-span-2 sm:col-span-2" />
               </div>
 
               <div className="mt-8 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-500">Ингредиенты</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-500">Ingredients</p>
                 <ul className="mt-3 space-y-2 text-zinc-700">
                   {recipe.ingredients.map((item, idx) => (
                     <li key={`${item}-${idx}`} className="leading-relaxed">• {item}</li>
@@ -257,7 +257,7 @@ export default function ResultPage() {
                   }}
                   className="rounded-full border border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900"
                 >
-                  Ингредиенты в избранное
+                  Add ingredients to favorites
                 </button>
                 <button
                   type="button"
@@ -269,7 +269,7 @@ export default function ResultPage() {
                   }}
                   className="rounded-full border border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900"
                 >
-                  Рецепт в избранное
+                  Set favorite recipe
                 </button>
               </div>
 
@@ -290,13 +290,13 @@ export default function ResultPage() {
               }}
               className="inline-flex w-full justify-center rounded-full bg-zinc-900 px-6 py-3 text-base font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-lg sm:w-auto"
             >
-              Другой рецепт
+              Another recipe
             </button>
             <Link
               href="/"
               className="inline-flex w-full justify-center rounded-full border border-zinc-300 px-6 py-3 text-base font-medium text-zinc-700 transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-400 hover:text-zinc-900 hover:shadow-sm sm:w-auto"
             >
-              Назад
+              Back
             </Link>
           </div>
         </section>
