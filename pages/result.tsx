@@ -45,29 +45,8 @@ function fallbackClientRecipe(mode: string, nonce: number): GeneratedRecipe {
 }
 
 function getRecipeImageByTitle(title: string) {
-  const t = title.toLowerCase();
-
-  if (t.includes('омлет') || t.includes('яич')) {
-    return 'https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  if (t.includes('панкейк') || t.includes('сырник')) {
-    return 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  if (t.includes('тост')) {
-    return 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  if (t.includes('йогурт')) {
-    return 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  if (t.includes('овсян')) {
-    return 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  return 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=80';
+  const query = encodeURIComponent(`${title}, breakfast dish, food`);
+  return `https://source.unsplash.com/1200x800/?${query}`;
 }
 
 export default function ResultPage() {
