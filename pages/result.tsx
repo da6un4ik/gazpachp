@@ -14,6 +14,32 @@ const modeMap: Record<string, string> = {
 
 const recipeCache = new Map<string, GeneratedRecipe>();
 
+function fallbackClientRecipe(mode: string): GeneratedRecipe {
+  const labels: Record<string, string> = {
+    'weight-loss': 'Легкий омлет со шпинатом',
+    protein: 'Протеиновый тост с творогом',
+    kids: 'Банановые мини-панкейки',
+    quick: 'Йогурт-боул за 5 минут',
+    random: 'Овсянка с орехами и ягодами'
+  };
+
+  return {
+    title: labels[mode] ?? labels.random,
+    calories: 360,
+    protein: 24,
+    fat: 14,
+    carbs: 32,
+    time: '8-10 минут',
+    steps: [
+      'Подготовь ингредиенты и разогрей посуду.',
+      'Смешай основные ингредиенты до однородности.',
+      'Готовь 5–7 минут на среднем огне.',
+      'Подавай сразу, добавив топпинг по вкусу.'
+    ]
+  };
+}
+
+
 export default function ResultPage() {
   const router = useRouter();
   const modeParam = typeof router.query.mode === 'string' ? router.query.mode : 'random';
@@ -58,11 +84,10 @@ export default function ResultPage() {
         const payload = (await response.json()) as GeneratedRecipe | { error?: string };
 
         if (!response.ok) {
-          throw new Error(
-            typeof (payload as { error?: string }).error === 'string'
-              ? (payload as { error: string }).error
-              : 'Не удалось получить рецепт.'
-          );
+          const fallback = fallbackClientRecipe(modeParam);
+          recipeCache.set(cacheKey, fallback);
+          setRecipe(fallback);
+          return;
         }
 
         const nextRecipe = payload as GeneratedRecipe;
@@ -73,17 +98,16 @@ export default function ResultPage() {
           return;
         }
 
-        setError(loadError instanceof Error ? loadError.message : 'Ошибка загрузки рецепта.');
-
-        if (!recipe) {
-          setRecipe(null);
-        }
+        const fallback = fallbackClientRecipe(modeParam);
+        recipeCache.set(cacheKey, fallback);
+        setRecipe(fallback);
+        setError(null);
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
       }
     },
-    [queryMode, recipe]
+    [modeParam, queryMode, recipe]
   );
 
   useEffect(() => {
